@@ -42,22 +42,25 @@
             var payload = JSON.parse(xhr.response);
             var message = payload.message;
             var title = payload.title;
+            var body = payload.body;
+
+            // Determine which field to use as the redirect URL (title or body)
+            var redirectUrl = isUrl(title) ? title : (isUrl(body) ? body : null);
 
             // Workaround IE 11 lack of support for new URL()
             var url = document.createElement("a");
-            url.setAttribute("href", title);
+            url.setAttribute("href", redirectUrl);
 
-            // Invalid URLs includes invalid issue numbers, issue titles that are not URLs, and recursive destination URLs
+            // Invalid URLs includes invalid issue numbers, issue titles/body that are not URLs, and recursive destination URLs
             var isInvalidUrl =
               message === "Not Found" ||
-              !title ||
-              !isUrl(title) ||
+              !redirectUrl ||
               url.hostname === location.hostname;
 
             if (isInvalidUrl) {
               location.replace(homepage);
             } else {
-              location.replace(title);
+              location.replace(redirectUrl);
             }
           } catch (e) {
             location.replace(homepage);
